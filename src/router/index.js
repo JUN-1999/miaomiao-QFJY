@@ -1,13 +1,18 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Hoem from "@/views/Home";
+import movieRouter from "./Movie";
+import cinemaRouter from "./Cinema";
+import mineRouter from "./Mine";
 
 Vue.use(VueRouter);
 
 const routes = [
+	movieRouter,
+	cinemaRouter,
+	mineRouter,
 	{
-		path: "/",
-		component: Hoem
+		path: "/*",
+		redirect: "/movie/nowplaying"
 	}
 ];
 
