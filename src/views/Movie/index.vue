@@ -4,13 +4,18 @@
 		<div id="content">
 			<div class="movie_menu">
 				<router-link tag="div" to="/movie/city" class="city_name">
-					<span>大连</span><i class="iconfont icon-lower-triangle"></i>
+					<span>{{ $store.state.city.nm }}</span
+					><i class="iconfont icon-lower-triangle"></i>
 				</router-link>
 				<div class="hot_swtich">
-					<router-link tag="div" to="/movie/nowplaying" class="hot_item">正在热映</router-link>
-					<router-link tag="div" to="/movie/comingsoon" class="hot_item">即将上映</router-link>
+					<router-link tag="div" to="/movie/nowplaying" class="hot_item"
+						>正在热映</router-link
+					>
+					<router-link tag="div" to="/movie/comingsoon" class="hot_item"
+						>即将上映</router-link
+					>
 				</div>
-				<router-link tag='div' to="/movie/search" class="search_entry">
+				<router-link tag="div" to="/movie/search" class="search_entry">
 					<i class="iconfont icon-sousuo"></i>
 				</router-link>
 			</div>
@@ -25,11 +30,42 @@
 <script>
 import Header from "@/components/Header";
 import TabBar from "@/components/TabBar";
+import { messageBox } from "@/components/JS/";
 export default {
 	name: "Movie",
 	components: {
 		Header,
 		TabBar
+	},
+	mounted() {
+		/*
+		发送定位API
+		axios({
+			url:'******'
+		}).then(res=>{
+			let nm=res.data.data.nm;
+			let id=res.data.data.id;
+			if(this.$store.state.city.id == id){ //一个sting类型 一个number类型
+				return;
+			}
+			messageBox({
+					title: "定位",
+					content: nm,
+					cancel: "取消",
+					ok: "切换定位",
+					handleCancel() {
+						console.log("handleCancel");
+					},
+					handleOk() {
+						// console.log("ok");
+						window.localStorage.setItem('nowNm',nm)
+						window.localStorage.setItem('nowId',id)
+						window.location.reload();
+					}
+				});
+		})
+		*/
+	
 	}
 };
 </script>
@@ -95,5 +131,17 @@ export default {
 .movie_menu .search_entry i {
 	font-size: 24px;
 	color: red;
+}
+
+.slide-enter-active {
+	animation: 13s detailMove;
+}
+@keyframes detailMove {
+	0% {
+		transform: translateX(100%);
+	}
+	100% {
+		transform: translateX(0);
+	}
 }
 </style>

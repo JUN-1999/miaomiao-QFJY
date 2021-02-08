@@ -1,96 +1,134 @@
 <template>
 	<div class="city_body">
 		<div class="city_list">
-			<div class="city_hot">
-				<h2>热门城市</h2>
-				<ul class="clearfix">
-					<li>上海</li>
-					<li>北京</li>
-					<li>上海</li>
-					<li>北京</li>
-					<li>上海</li>
-					<li>北京</li>
-					<li>上海</li>
-					<li>北京</li>
-				</ul>
-			</div>
-			<div class="city_sort">
+			<Loading v-if="isloading" />
+			<Scroller v-else ref="city_list">
 				<div>
-					<h2>A</h2>
-					<ul>
-						<li>阿拉善盟</li>
-						<li>鞍山</li>
-						<li>安庆</li>
-						<li>安阳</li>
-					</ul>
+					<div class="city_hot">
+						<h2>热门城市</h2>
+						<ul class="clearfix">
+							<li
+								@tap="handleToCity(data.name, data.cityId)"
+								v-for="data in hotlist"
+								:key="data.cityId"
+							>
+								{{ data.name }}
+							</li>
+						</ul>
+					</div>
+					<div class="city_sort" ref="city_sort">
+						<div v-for="data in datalist" :key="data.index">
+							<h2>{{ data.index }}</h2>
+							<ul>
+								<li
+									@tap="handleToCity(datalist.name, datalist.cityId)"
+									v-for="datalist in data.list"
+									:key="datalist.cityId"
+								>
+									{{ datalist.name }}
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="city_index">
+						<ul>
+							<li
+								@touchstart="handleToIndex(index)"
+								v-for="(data, index) in datalist"
+								:key="data.index"
+							>
+								{{ data.index }}
+							</li>
+						</ul>
+					</div>
 				</div>
-				<div>
-					<h2>B</h2>
-					<ul>
-						<li>北京</li>
-						<li>保定</li>
-						<li>蚌埠</li>
-						<li>包头</li>
-					</ul>
-				</div>
-				<div>
-					<h2>A</h2>
-					<ul>
-						<li>阿拉善盟</li>
-						<li>鞍山</li>
-						<li>安庆</li>
-						<li>安阳</li>
-					</ul>
-				</div>
-				<div>
-					<h2>B</h2>
-					<ul>
-						<li>北京</li>
-						<li>保定</li>
-						<li>蚌埠</li>
-						<li>包头</li>
-					</ul>
-				</div>
-				<div>
-					<h2>A</h2>
-					<ul>
-						<li>阿拉善盟</li>
-						<li>鞍山</li>
-						<li>安庆</li>
-						<li>安阳</li>
-					</ul>
-				</div>
-				<div>
-					<h2>B</h2>
-					<ul>
-						<li>北京</li>
-						<li>保定</li>
-						<li>蚌埠</li>
-						<li>包头</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<div class="city_index">
-			<ul>
-				<li>A</li>
-				<li>B</li>
-				<li>C</li>
-				<li>D</li>
-				<li>E</li>
-			</ul>
+			</Scroller>
 		</div>
 	</div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
-	name: "city"
+	name: "city",
+	data() {
+		return {
+			datalist: [],
+			hotlist: [],
+			isloading: true
+		};
+	},
+	mounted() {
+		var datalist = window.localStorage.getItem("datalist");
+		var hotlist = window.localStorage.getItem("hotlist");
+
+		if (datalist && hotlist) {
+			this.datalist = JSON.parse(datalist);
+			this.hotlist = JSON.parse(hotlist);
+			this.isloading = false;
+		} else {
+			axios({
+				url: "https://m.maizuo.com/gateway?k=9502566",
+				headers: {
+					"X-Client-Info":
+						'{"a":"3000","ch":"1002","v":"5.0.4","e":"15610855429195524981146"}',
+					"X-Host": "mall.film-ticket.city.list"
+				}
+			}).then(res => {
+				this.datalist = this.handleCity(res.data.data.cities);
+				this.hotlist = this.handleHotCity(res.data.data.cities);
+				this.isloading = false;
+				window.localStorage.setItem("datalist", JSON.stringify(this.datalist));
+				window.localStorage.setItem("hotlist", JSON.stringify(this.hotlist));
+			});
+		}
+	},
+	methods: {
+		handleCity(data) {
+			var letterArr = [];
+			for (let i = 65; i < 91; i++) {
+				letterArr.push(String.fromCharCode(i));
+			}
+			const newlist = [];
+			for (let j = 0; j < letterArr.length; j++) {
+				const arr = data.filter(
+					item => item.pinyin.substring(0, 1) === letterArr[j].toLowerCase()
+				);
+				if (arr.length > 0) {
+					newlist.push({
+						index: letterArr[j],
+						list: arr
+					});
+				}
+			}
+			return newlist;
+		},
+		handleHotCity(data) {
+			let hotlist = [];
+			for (var i = 0; i < data.length; i++) {
+				if (data[i].isHot === 1) {
+					hotlist.push(data[i]);
+				}
+			}
+			return hotlist;
+		},
+		handleToIndex(index) {
+			var h2 = this.$refs.city_sort.getElementsByTagName("h2");
+			// this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+			this.$refs.city_list.toScrollTop(-h2[index].offsetTop);
+		},
+		handleToCity(nm, id) {
+			this.$store.commit("city/CITY_INFO", { nm, id });
+			window.localStorage.setItem("nowNm", nm);
+			window.localStorage.setItem("nowId", id);
+
+			this.$router.push("/movie/nowplaying");
+		}
+	}
 };
 </script>
 
 <style scoped>
-
 #content .city_body {
 	margin-top: 45px;
 	display: flex;

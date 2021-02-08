@@ -1,25 +1,115 @@
 <template>
-	<div class="movie_body">
-		<ul>
-			<li>
-				<div class="pic_show"><img src="\images\movie_1.jpg" /></div>
-				<div class="info_list">
-					<h2>无名之辈</h2>
-					<p>观众评 <span class="grade">9.2</span></p>
-					<p>主演: 陈建斌,任素汐,潘斌龙</p>
-					<p>今天55家影院放映607场</p>
-				</div>
-				<div class="btn_mall">
-					购票
-				</div>
-			</li>
-		</ul>
+	<div class="movie_body" ref="moviebody">
+		<Loading v-if="isLoading" />
+		<Scroller
+			v-else
+			:hanleToScroll="hanleToScroll"
+			:handleToTouchEnd="handleToTouchEnd"
+		>
+			<ul>
+				<li class="pullDown">{{ pullDownMsg }}</li>
+				<li v-for="data in movieList" :key="data.id">
+					<div class="pic_show" @tap="handleToDetail">
+						<img :src="data.img | MovieImg" />
+					</div>
+					<div class="info_list">
+						<h2>{{ data.nm }}<img v-if="data.version" src="@/assets/maxs.png" /></h2>
+						<p>
+							观众评 <span class="grade">{{ data.sc }}</span>
+						</p>
+						<p>主演: {{ data.star }}</p>
+						<p>{{ data.showInfo }}</p>
+					</div>
+					<div class="btn_mall">
+						购票
+					</div>
+				</li>
+			</ul>
+		</Scroller>
 	</div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
-	name: "NowPlaying"
+	name: "NowPlaying",
+	data() {
+		return {
+			movieList: [],
+			pullDownMsg: "",
+			isLoading: true,
+			prevCityId: -1
+		};
+	},
+	activated() {
+		let cityId = this.$store.state.city.id;
+		if (this.prevCityId === cityId) {
+			return;
+		}
+		this.isLoading = true;
+		axios({
+			url: "/ajax/movieOnInfoList?cityId=" + cityId
+		}).then(res => {
+			this.movieList = res.data.movieList;
+			this.isLoading = false;
+			this.prevCityId = cityId;
+
+			// this.$nextTick(() => {
+			// let scroll = new BScroll(this.$refs.moviebody, {
+			// 	tap: "tap",
+			// 	probeType: 1
+			// });
+			// scroll.on("scroll", pos => {
+			// 	if (pos.y > 30) {
+			// 		this.pullDownMsg = "正在更新中。。。";
+			// 	}
+			// });
+			// scroll.on("touchEnd", pos => {
+			// 	if (pos.y > 30) {
+			// 		axios({
+			// 			url: "/ajax/movieOnInfoList?cityId=11"
+			// 		}).then(res => {
+			// 			this.pullDownMsg = "更新成功";
+			// 			setTimeout(() => {
+			// 				this.movieList = res.data.movieList;
+			// 				this.pullDownMsg = "";
+			// 			}, 1000);
+			// 		});
+			// 	}
+			// });
+			// });
+		});
+	},
+
+	filters: {
+		MovieImg(imgUrl) {
+			let newUrl = imgUrl.replace("w.h", "170.230");
+			return newUrl;
+		}
+	},
+	methods: {
+		handleToDetail() {
+			console.log("handleToDetail");
+		},
+		hanleToScroll(pos) {
+			if (pos.y > 30) {
+				this.pullDownMsg = "正在更新中。。。";
+			}
+		},
+		handleToTouchEnd(pos) {
+			if (pos.y > 30) {
+				axios({
+					url: "/ajax/movieOnInfoList?cityId=11"
+				}).then(res => {
+					this.pullDownMsg = "更新成功";
+					setTimeout(() => {
+						this.movieList = res.data.movieList;
+						this.pullDownMsg = "";
+					}, 1000);
+				});
+			}
+		}
+	}
 };
 </script>
 
@@ -93,5 +183,10 @@ export default {
 }
 .movie_body .btn_pre {
 	background-color: #3c9fe6;
+}
+.movie_body .pullDown {
+	margin: 0;
+	padding: 0;
+	border: none;
 }
 </style>
