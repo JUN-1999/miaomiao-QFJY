@@ -9,11 +9,13 @@
 			<ul>
 				<li class="pullDown">{{ pullDownMsg }}</li>
 				<li v-for="data in movieList" :key="data.id">
-					<div class="pic_show" @tap="handleToDetail">
+					<div class="pic_show" @tap="handleToDetail(data.id)">
 						<img :src="data.img | MovieImg" />
 					</div>
 					<div class="info_list">
-						<h2>{{ data.nm }}<img v-if="data.version" src="@/assets/maxs.png" /></h2>
+						<h2 @tap="handleToDetail(data.id)">
+							{{ data.nm }}<img v-if="data.version" src="@/assets/maxs.png" />
+						</h2>
 						<p>
 							观众评 <span class="grade">{{ data.sc }}</span>
 						</p>
@@ -88,8 +90,8 @@ export default {
 		}
 	},
 	methods: {
-		handleToDetail() {
-			console.log("handleToDetail");
+		handleToDetail(movieId) {
+			this.$router.push("/movie/detail/1/" + movieId);
 		},
 		hanleToScroll(pos) {
 			if (pos.y > 30) {

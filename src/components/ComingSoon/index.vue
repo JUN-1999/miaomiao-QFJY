@@ -3,10 +3,12 @@
 		<Loading v-if="isLoading" />
 		<Scroller v-else>
 			<ul>
-				<li v-for="data in comingList">
-					<div class="pic_show"><img :src="data.img | MovieImg" /></div>
+				<li v-for="data in comingList" :key="data.id">
+					<div @tap="handleToDetail(data.id)" class="pic_show">
+						<img :src="data.img | MovieImg" />
+					</div>
 					<div class="info_list">
-						<h2>{{ data.nm }}</h2>
+						<h2 @tap="handleToDetail(data.id)">{{ data.nm }}</h2>
 						<p>
 							<span class="person">{{ data.wish }}</span> 人想看
 						</p>
@@ -52,6 +54,11 @@ export default {
 		MovieImg(imgUrl) {
 			let newUrl = imgUrl.replace("w.h", "170.230");
 			return newUrl;
+		}
+	},
+	methods: {
+		handleToDetail(movieId) {
+			this.$router.push("/movie/detail/2/" + movieId);
 		}
 	}
 };
