@@ -1,25 +1,59 @@
 <template>
 	<div class="movie_body">
-		<ul>
-			<li>
-				<div class="pic_show"><img src="/images/movie_1.jpg" /></div>
-				<div class="info_list">
-					<h2>无名之辈</h2>
-					<p><span class="person">17746</span> 人想看</p>
-					<p>主演: 陈建斌,任素汐,潘斌龙</p>
-					<p>2018-11-30上映</p>
-				</div>
-				<div class="btn_pre">
-					预售
-				</div>
-			</li>
-		</ul>
+		<Loading v-if="isLoading" />
+		<Scroller v-else>
+			<ul>
+				<li v-for="data in comingList">
+					<div class="pic_show"><img :src="data.img | MovieImg" /></div>
+					<div class="info_list">
+						<h2>{{ data.nm }}</h2>
+						<p>
+							<span class="person">{{ data.wish }}</span> 人想看
+						</p>
+						<p>主演: {{ data.star }}</p>
+						<p>{{ data.rt }}上映</p>
+					</div>
+					<div class="btn_pre">
+						预售
+					</div>
+				</li>
+			</ul>
+		</Scroller>
 	</div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
-	name: "comingsoon"
+	name: "comingsoon",
+	data() {
+		return {
+			comingList: [],
+			isLoading: true,
+			prevCityId: -1
+		};
+	},
+	activated() {
+		let cityId = this.$store.state.city.id;
+		if (this.prevCityId === cityId) {
+			return;
+		}
+		this.isLoading = true;
+		axios({
+			url:
+				"/ajax/comingList?ci=1&token=&limit=10&optimus_uuid=B878F850608311EB84319F63E554F05021E28AB68CA646F1B9B4DC8CAE798EDA&optimus_risk_level=71&optimus_code=10"
+		}).then(res => {
+			this.comingList = res.data.coming;
+			this.isLoading = false;
+			this.prevCityId = cityId;
+		});
+	},
+	filters: {
+		MovieImg(imgUrl) {
+			let newUrl = imgUrl.replace("w.h", "170.230");
+			return newUrl;
+		}
+	}
 };
 </script>
 
